@@ -5,7 +5,7 @@
 
 namespace Application\Model\Payment;
 
-use Application\ValueObject\CreditCardPayment;
+use Application\ValueObject\PaymentServiceResponse;
 
 /**
  * Interface Adapter
@@ -17,8 +17,8 @@ interface Dao
      * Save user payment attempt
      *
      * @param $userId
-     * @param CreditCardPayment $payment
+     * @param PaymentServiceResponse $payment
      * @return mixed
      */
-    public function savePayment($userId, CreditCardPayment $payment);
+    public function savePayment($userId, PaymentServiceResponse $payment);
 }

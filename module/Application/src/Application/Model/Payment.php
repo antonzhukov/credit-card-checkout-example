@@ -74,15 +74,15 @@ class Payment
         );
 
         try {
+            // Send card data to payment service
             $response = $this->paymentService->processCreditCardPayment($userId, $payment);
         } catch (BadResponseException $e) {
             $message = 'Service temporarily unavailable';
             $response = new PaymentServiceResponse(false, $message);
         }
 
-        if ($response->result) {
-            // Write to DB
-        }
+        // Write payment attempt to db
+        $this->dao->savePayment($userId, $response);
 
         return $response;
     }
