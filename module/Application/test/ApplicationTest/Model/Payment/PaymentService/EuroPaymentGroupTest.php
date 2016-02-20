@@ -13,6 +13,11 @@ class EuroPaymentGroupTest extends \PHPUnit_Framework_TestCase
 {
     protected $config;
 
+    /**
+     * @var \PHPUnit_Framework_MockObject_MockObject|EuroPaymentGroup
+     */
+    protected $service;
+
     public function setUp()
     {
         $this->config = [
@@ -20,6 +25,15 @@ class EuroPaymentGroupTest extends \PHPUnit_Framework_TestCase
             'app_name' => 'test_merchant',
             'secret_key' => 'f11t4kT3Go2Mz7U8',
         ];
+
+        $logger = $this->getMockBuilder('Monolog\Logger')
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $this->service = $this->getMockBuilder('Application\Model\Payment\PaymentService\EuroPaymentGroup')
+            ->setConstructorArgs(array($this->config, $logger))
+            ->setMethods(['sendRequest'])
+            ->getMock();
     }
 
     /**
@@ -30,20 +44,14 @@ class EuroPaymentGroupTest extends \PHPUnit_Framework_TestCase
      */
     public function testSendRequest(CreditCardPayment $payment, $json, PaymentServiceResponse $expectedResponse)
     {
-        $service = $this->getMockBuilder('Application\Model\Payment\PaymentService\EuroPaymentGroup')
-            ->setConstructorArgs(array($this->config))
-            ->setMethods(['sendRequest'])
-            ->getMock();
-        $service->expects($this->any())
+        $this->service->expects($this->any())
             ->method('sendRequest')
             ->willReturn($json);
 
-        /** @var EuroPaymentGroup $service */
-        $responseObject = $service->processCreditCardPayment($payment);
+        $responseObject = $this->service->processCreditCardPayment(123, $payment);
 
         $this->assertEquals($expectedResponse->result, $responseObject->result);
         $this->assertEquals($expectedResponse->message, $responseObject->message);
-
     }
 
     /**

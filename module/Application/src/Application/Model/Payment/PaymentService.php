@@ -16,8 +16,9 @@ use Application\ValueObject\PaymentServiceResponse;
 interface PaymentService
 {
     /**
+     * @param int               $userId
      * @param CreditCardPayment $payment
      * @return PaymentServiceResponse
      */
-    public function processCreditCardPayment(CreditCardPayment $payment);
+    public function processCreditCardPayment($userId, CreditCardPayment $payment);
 }

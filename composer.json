@@ -10,6 +10,6 @@
     "require": {
         "php": ">=5.5",
         "zendframework/zendframework": "~2.5",
-
+        "enlitepro/enlite-monolog": "~1.1.0"
     }
 }

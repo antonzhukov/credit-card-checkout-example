@@ -7,9 +7,12 @@ body {
     float: left;
     clear: left;
 }
-
 #credit-card-payment [type="submit"] {
     float: left;
     clear: both;
     margin-top: 16px;
+}
+ul.error li {
+    list-style: none;
+    color: #d62728;
 }

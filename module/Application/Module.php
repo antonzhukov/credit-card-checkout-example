@@ -43,8 +43,10 @@ class Module
             'factories'=>array(
                 'Factory' => function ($sm) {
                     $dbAdapter = $sm->get('Zend\Db\Adapter\Adapter');
+                    $logger = $sm->get('EnliteMonologService');
                     $factory = new Service\Factory(
                         $dbAdapter,
+                        $logger,
                         $this->getConfig()['application']
                     );
                     return $factory;

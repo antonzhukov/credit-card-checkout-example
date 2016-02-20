@@ -74,7 +74,7 @@ class Payment
         );
 
         try {
-            $response = $this->paymentService->processCreditCardPayment($payment);
+            $response = $this->paymentService->processCreditCardPayment($userId, $payment);
         } catch (BadResponseException $e) {
             $message = 'Service temporarily unavailable';
             $response = new PaymentServiceResponse(false, $message);

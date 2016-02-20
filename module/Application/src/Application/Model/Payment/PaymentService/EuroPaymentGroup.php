@@ -8,28 +8,44 @@ namespace Application\Model\Payment\PaymentService;
 use Application\ValueObject\CreditCardPayment;
 use Application\Model\Payment\PaymentService;
 use Application\ValueObject\PaymentServiceResponse;
+use Monolog\Logger;
 use Zend\Http\Client;
 use Zend\Http\Client\Adapter\Curl;
 use Application\Exception\BadResponseException;
 
 class EuroPaymentGroup implements PaymentService
 {
+    /**
+     * @var string
+     */
     protected $url;
+    /**
+     * @var string
+     */
     protected $appName;
+    /**
+     * @var string
+     */
     protected $secretKey;
+    /**
+     * @var Logger
+     */
+    protected $logger;
 
-    public function __construct($config)
+    public function __construct($config, Logger $logger)
     {
         $this->url = $config['url'];
         $this->appName = $config['app_name'];
         $this->secretKey = $config['secret_key'];
+        $this->logger = $logger;
     }
 
     /**
+     * @param int               $userId
      * @param CreditCardPayment $payment
      * @return PaymentServiceResponse
      */
-    public function processCreditCardPayment(CreditCardPayment $payment)
+    public function processCreditCardPayment($userId, CreditCardPayment $payment)
     {
         $result = false;
         $message = '';
@@ -45,7 +61,7 @@ class EuroPaymentGroup implements PaymentService
             'ExpYear' => $payment->expireYear,
         ];
 
-        $rawResponse = $this->sendRequest($params);
+        $rawResponse = $this->sendRequest($userId, $params);
 
         if (is_array($rawResponse) && isset($rawResponse['result'], $rawResponse['resultCode'])) {
             if ($rawResponse['result'] === 'OK') {
@@ -60,11 +76,12 @@ class EuroPaymentGroup implements PaymentService
     }
 
     /**
-     * @param $params
+     * @param int   $userId
+     * @param array $params
      * @return array
      * @throws BadResponseException
      */
-    protected function sendRequest($params)
+    protected function sendRequest($userId, array $params)
     {
         $timestamp = time();
         error_reporting(E_ALL);
@@ -85,14 +102,17 @@ class EuroPaymentGroup implements PaymentService
         try {
             $response = $client->send();
         } catch (Client\Adapter\Exception\RuntimeException $e) {
+            $this->logTransaction($userId, 'Transaction attempt failed: ' . $e->getMessage(), $client);
             throw new BadResponseException();
         }
 
         if (!$response->isSuccess()) {
+            $this->logTransaction($userId, 'Transaction attempt unsuccessful', $client);
             throw new BadResponseException();
         }
 
         $result = $response->getBody();
+        $this->logTransaction($userId, 'Transaction attempt successful', $client, $result);
 
         $json = json_decode(trim($result), true);
 
@@ -116,5 +136,19 @@ class EuroPaymentGroup implements PaymentService
         $iv = mcrypt_create_iv($ivSize, MCRYPT_DEV_RANDOM); //Creates an initialization vector (IV) from a random source.
         $ciphertext = mcrypt_encrypt(MCRYPT_RIJNDAEL_128, $this->secretKey, $plaintext, MCRYPT_MODE_CBC, $iv); //Encrypts the data and returns it.
         return base64_encode($iv.$ciphertext); //Encode Base 64
+    }
+
+    public function logTransaction($userId, $message, Client $client, $response = null)
+    {
+        $params = [
+            'user_id' => $userId,
+            'url' => $client->getUri()->toString(),
+            'app_name' => $this->appName,
+            'timestamp' => $client->getHeader('Payment-Timestamp'),
+        ];
+        if ($response !== null) {
+            $params['response'] = $response;
+        }
+        $this->logger->addInfo($message, $params);
     }
 }

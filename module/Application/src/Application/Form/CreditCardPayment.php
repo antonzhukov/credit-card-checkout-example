@@ -96,10 +96,17 @@ class CreditCardPayment extends \Zend\Form\Form
     public function getData($flag = FormInterface::VALUES_NORMALIZED)
     {
         $data = parent::getData();
+
+        // We don't want customer CC info to be stored in global object
+        foreach ($data as $key => $item) {
+            unset($_POST[$key]);
+        }
+
         if (isset($data['expire']) && strstr($data['expire'], '/')) {
             list($data['expire_month'], $data['expire_year']) = explode('/', $data['expire']);
         }
         unset($data['Submit'], $data['expire']);
+
 
         return $data;
     }
