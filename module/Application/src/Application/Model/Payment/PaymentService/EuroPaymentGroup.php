@@ -72,7 +72,7 @@ class EuroPaymentGroup implements PaymentService
 
         $client = new Client();
         $client->setAdapter(new Curl())
-            ->setRawBody(json_encode($data)) /** TODO: add mcrypt for me */
+            ->setRawBody(json_encode($data))
             ->setUri($this->url)
             ->setHeaders([
                 'Payment-App-Name' => $this->appName,
