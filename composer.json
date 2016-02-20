@@ -1,0 +1,15 @@
+{
+    "name": "zendframework/credit-card-checkout-example",
+    "description": "Test task for one of the companies I was interviewed",
+    "license": "BSD-3-Clause",
+    "keywords": [
+        "credit",
+        "card",
+        "checkout"
+    ],
+    "require": {
+        "php": ">=5.5",
+        "zendframework/zendframework": "~2.5",
+
+    }
+}
